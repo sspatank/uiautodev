@@ -57,20 +57,9 @@ class U2AndroidDriver(ADBAndroidDriver):
                     f"Upgrade with: pip install -U uiautomator2 (or poetry update uiautomator2 "
                     f"if you're developing uiautodev with poetry)"
                 )
-            try:
-                from uiautomator2.core import check_port
-            except ImportError:
-                logger.warning(
-                    "uiautomator2.core.check_port is unavailable; skipping port range validation"
-                )
-            else:
-                try:
-                    check_port(self.port)
-                except ValueError as e:
-                    raise AndroidDriverException(str(e))
             return u2.connect_usb(self.serial, port=self.port)
         return u2.connect_usb(self.serial)
-    
+
     def screenshot(self, id: int) -> Image.Image:
         if id > 0:
             # u2 is not support multi-display yet
@@ -100,12 +89,12 @@ class U2AndroidDriver(ADBAndroidDriver):
             return self.ud.dump_hierarchy()
         except Exception as e:
             raise AndroidDriverException(f"Failed to dump hierarchy: {str(e)}")
-    
+
     def tap(self, x: int, y: int):
         self.ud.click(x, y)
-    
+
     def send_keys(self, text: str):
         self.ud.send_keys(text)
-    
+
     def clear_text(self):
         self.ud.clear_text()
