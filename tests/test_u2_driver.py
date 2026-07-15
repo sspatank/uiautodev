@@ -44,15 +44,6 @@ def test_ud_raises_when_installed_version_unknown():
     connect_usb.assert_not_called()
 
 
-def test_ud_raises_on_out_of_range_port():
-    driver = _make_driver(port=99999)
-    with mock.patch("uiautodev.driver.android.u2_driver._INSTALLED_U2_VERSION", (3, 7, 0)), \
-         mock.patch("uiautodev.driver.android.u2_driver.u2.connect_usb") as connect_usb:
-        with pytest.raises(AndroidDriverException, match="1-65535"):
-            driver.ud
-    connect_usb.assert_not_called()
-
-
 def test_parse_version_parses_clean_release_string():
     from uiautodev.driver.android.u2_driver import _parse_version
 

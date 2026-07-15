@@ -100,12 +100,12 @@ class U2AndroidDriver(ADBAndroidDriver):
             return self.ud.dump_hierarchy()
         except Exception as e:
             raise AndroidDriverException(f"Failed to dump hierarchy: {str(e)}")
-    
+
     def tap(self, x: int, y: int):
         self.ud.click(x, y)
-    
+
     def send_keys(self, text: str):
         self.ud.send_keys(text)
-    
+
     def clear_text(self):
         self.ud.clear_text()
