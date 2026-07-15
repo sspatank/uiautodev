@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 from uiautodev import command_proxy
 from uiautodev.command_types import Command, CurrentAppResponse, InstallAppRequest, InstallAppResponse, TapRequest
+from uiautodev.exceptions import DriverException
 from uiautodev.model import DeviceInfo, Node, ShellResponse
 from uiautodev.provider import BaseProvider
 
@@ -72,36 +73,55 @@ def make_router(provider: BaseProvider) -> APIRouter:
     @router.post('/{serial}/command/tap')
     def command_tap(serial: str, params: TapRequest):
         """Run a command on the device"""
-        driver = provider.get_device_driver(serial)
-        command_proxy.tap(driver, params)
-        return {"status": "ok"}
-    
+        try:
+            driver = provider.get_device_driver(serial)
+            command_proxy.tap(driver, params)
+            return {"status": "ok"}
+        except DriverException as e:
+            logger.error(f"Error tapping device: {str(e)}")
+            return Response(content=str(e), media_type="text/plain", status_code=500)
+
     @router.post('/{serial}/command/installApp')
     def install_app(serial: str, params: InstallAppRequest) -> InstallAppResponse:
         """Install app"""
-        driver = provider.get_device_driver(serial)
-        return command_proxy.app_install(driver, params)
+        try:
+            driver = provider.get_device_driver(serial)
+            return command_proxy.app_install(driver, params)
+        except DriverException as e:
+            logger.error(f"Error installing app: {str(e)}")
+            return Response(content=str(e), media_type="text/plain", status_code=500)
 
     @router.get('/{serial}/command/currentApp')
     def current_app(serial: str) -> CurrentAppResponse:
         """Get current app"""
-        driver = provider.get_device_driver(serial)
-        return command_proxy.app_current(driver)
+        try:
+            driver = provider.get_device_driver(serial)
+            return command_proxy.app_current(driver)
+        except DriverException as e:
+            logger.error(f"Error getting current app: {str(e)}")
+            return Response(content=str(e), media_type="text/plain", status_code=500)
 
     @router.post('/{serial}/command/{command}')
     def _command_proxy_other(serial: str, command: Command, params: Dict[str, Any] = None):
         """Run a command on the device"""
-        driver = provider.get_device_driver(serial)
-        response = command_proxy.send_command(driver, command, params)
-        return response
-    
+        try:
+            driver = provider.get_device_driver(serial)
+            return command_proxy.send_command(driver, command, params)
+        except DriverException as e:
+            logger.error(f"Error running command {command}: {str(e)}")
+            return Response(content=str(e), media_type="text/plain", status_code=500)
+
     @router.get('/{serial}/backupApp')
     def _backup_app(serial: str, packageName: str):
         """Backup app
-        
+
         Added in 0.5.0
         """
-        driver = provider.get_device_driver(serial)
+        try:
+            driver = provider.get_device_driver(serial)
+        except DriverException as e:
+            logger.error(f"Error backing up app: {str(e)}")
+            return Response(content=str(e), media_type="text/plain", status_code=500)
         file_name = f"{packageName}.apk"
         headers = {
             'Content-Disposition': f'attachment; filename="{file_name}"'
