@@ -71,7 +71,8 @@ class AndroidProvider(BaseProvider):
             if issubclass(self.driver_class, U2AndroidDriver):
                 return self.driver_class(serial, port=self.port)
             logger.warning(
-                "UIAUTODEV_U2_PORT is set but %s does not support a custom port; ignoring",
+                "A custom uiautomator2 port (%s) was provided but %s does not support a custom port; ignoring",
+                self.port,
                 self.driver_class.__name__,
             )
         return self.driver_class(serial)
